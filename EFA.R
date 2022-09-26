@@ -1,0 +1,41 @@
+library(lavaan)
+library(semPlot)
+#读取lavaan内置的数据集HolzingerSwineford1939
+data(HolzingerSwineford1939)
+###############相关系数矩阵#############
+相关矩阵<-cor(HolzingerSwineford1939[,7:15], method = 'pearson')
+相关矩阵
+#相关矩阵图
+library(corrplot)
+corrplot(相关矩阵, method = 'number', number.cex = 0.8, diag = FALSE, tl.cex = 0.8)
+corrplot(相关矩阵, add = TRUE, type = 'upper', method = 'pie', diag = FALSE, tl.pos = 'n', cl.pos = 'n')
+################球形检验##############
+#相关矩阵为各条目之间的相关矩阵
+#n为数据样本的人数，即心理学中的N值
+#diag为默认
+library(psych)
+#################KMO检验##############
+cortest.bartlett(相关矩阵, n = 301)
+KMO(相关矩阵)
+################判断提取公因子数##############
+#n.obsyang表示样本量
+#fa表示主成分(fa="pc")或公共因子分析(fa="fa")或者两者都要both
+#n.iter表示模拟次数
+fa.parallel(相关矩阵,n.obs=301,fa = "both", n.iter = 100, main = "平行分析碎石图")
+#碎石图结果，实线表示真实数据，虚线表示模拟数据。
+#主成分分析(PC)即x线，真实数据中3个成分高于模拟数据；同样，因子分析(FA)即三角形线，真实数据中也有3个因子高于100次模拟数据矩阵的特征值均值。
+#选择3个成分
+################提取公因子数##############
+fa <- fa(相关矩阵, nfactors = 3, rotate = "none", fm = "pa")
+# 提取3个因子，不旋转，使用主轴迭代法
+fa
+#Proportion Var 每个因子对整个数据集的解释程度
+#Cumulative Var  因子对数据集的累计解释程度#3个因子解释了整个数据集54%的方差
+#Cumulative Proportion 累计方法解释率
+################用正交旋转提取因子######################
+#rotate表示旋转方法，varimax为正交旋转法，promax为斜交旋转法
+fa.varimax <- fa(相关矩阵,nfactors = 3, rotate = "varimax", fm = "pa")
+fa.varimax
+#正交旋转法后的图形
+factor.plot(fa.varimax, labels = rownames(fa.varimax$loadings))
+fa.diagram(fa.varimax, digits = 3)# digits = 3表示保留3为小数
